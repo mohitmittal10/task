@@ -12,7 +12,6 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
   
-  /* Styling for D3 elements */
   .x-axis path,
   .y-axis path,
   .x-axis line,
@@ -32,7 +31,6 @@
     fill: #333;
   }
   
-  /* Responsive styles */
   @media (max-width: 768px) {
     .form-container {
       padding: 1rem;
@@ -43,7 +41,6 @@
     }
   }
   
-  /* Button styles */
   button {
     transition: background-color 0.2s;
   }

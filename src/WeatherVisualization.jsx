@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 const WeatherVisualization = () => {
-  // Initial mock data - 7 days of temperature readings
   const initialData = [
     { date: '2025-03-10', temperature: 62, humidity: 65, condition: 'Sunny' },
     { date: '2025-03-11', temperature: 58, humidity: 70, condition: 'Partly Cloudy' },
@@ -13,19 +12,15 @@ const WeatherVisualization = () => {
     { date: '2025-03-16', temperature: 57, humidity: 75, condition: 'Cloudy' },
   ];
 
-  // State to store the weather data
   const [weatherData, setWeatherData] = useState(initialData);
   
-  // State for new data entry
   const [newDate, setNewDate] = useState('2025-03-17');
   const [newTemp, setNewTemp] = useState(60);
   const [newHumidity, setNewHumidity] = useState(70);
   const [newCondition, setNewCondition] = useState('Sunny');
 
-  // Ref for the chart container
   const svgRef = useRef();
   
-  // Function to add new data
   const addNewData = () => {
     const newDataPoint = {
       date: newDate,
@@ -36,26 +31,21 @@ const WeatherVisualization = () => {
     
     setWeatherData([...weatherData, newDataPoint]);
     
-    // Reset form fields
     setNewDate(d3.timeFormat('%Y-%m-%d')(d3.timeDay.offset(d3.timeParse('%Y-%m-%d')(newDate), 1)));
     setNewTemp(60);
     setNewHumidity(70);
     setNewCondition('Sunny');
   };
 
-  // D3 chart creation/update function
   useEffect(() => {
     if (!weatherData.length) return;
 
-    // Clear any existing SVG
     d3.select(svgRef.current).selectAll("*").remove();
     
-    // Set up dimensions and margins
     const margin = { top: 40, right: 80, bottom: 60, left: 60 };
     const width = svgRef.current.clientWidth - margin.left - margin.right;
     const height = 400 - margin.top - margin.bottom;
 
-    // Create SVG element
     const svg = d3.select(svgRef.current)
       .append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -63,7 +53,6 @@ const WeatherVisualization = () => {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Create scales
     const parseDate = d3.timeParse("%Y-%m-%d");
     
     const x = d3.scaleTime()
@@ -74,11 +63,9 @@ const WeatherVisualization = () => {
       .domain([d3.min(weatherData, d => d.temperature) - 5, d3.max(weatherData, d => d.temperature) + 5])
       .range([height, 0]);
 
-    // Create axes
     const xAxis = d3.axisBottom(x);
     const yAxis = d3.axisLeft(y);
 
-    // Add X axis
     svg.append("g")
       .attr("class", "x-axis")
       .attr("transform", `translate(0,${height})`)
@@ -89,7 +76,6 @@ const WeatherVisualization = () => {
       .attr("dy", ".15em")
       .attr("transform", "rotate(-45)");
 
-    // Add X axis label
     svg.append("text")
       .attr("class", "x-label")
       .attr("text-anchor", "middle")
@@ -97,12 +83,10 @@ const WeatherVisualization = () => {
       .attr("y", height + margin.bottom - 10)
       .text("Date");
 
-    // Add Y axis
     svg.append("g")
       .attr("class", "y-axis")
       .call(yAxis);
 
-    // Add Y axis label
     svg.append("text")
       .attr("class", "y-label")
       .attr("text-anchor", "middle")
@@ -111,7 +95,6 @@ const WeatherVisualization = () => {
       .attr("x", -height / 2)
       .text("Temperature (°F)");
 
-    // Create title
     svg.append("text")
       .attr("x", width / 2)
       .attr("y", -margin.top / 2)
@@ -120,13 +103,11 @@ const WeatherVisualization = () => {
       .style("font-weight", "bold")
       .text("Weekly Temperature Trends");
 
-    // Create line generator
     const line = d3.line()
       .x(d => x(parseDate(d.date)))
       .y(d => y(d.temperature))
       .curve(d3.curveMonotoneX);
 
-    // Add the line path
     const path = svg.append("path")
       .datum(weatherData)
       .attr("fill", "none")
@@ -134,7 +115,6 @@ const WeatherVisualization = () => {
       .attr("stroke-width", 2)
       .attr("d", line);
     
-    // Add animation to the line
     const pathLength = path.node().getTotalLength();
     path
       .attr("stroke-dasharray", pathLength)
@@ -143,7 +123,6 @@ const WeatherVisualization = () => {
       .duration(1000)
       .attr("stroke-dashoffset", 0);
 
-    // Add data points
     const dots = svg.selectAll(".dot")
       .data(weatherData)
       .enter()
@@ -153,13 +132,11 @@ const WeatherVisualization = () => {
       .attr("cy", d => y(d.temperature))
       .attr("r", 5)
       .attr("fill", d => {
-        // Color based on temperature
         if (d.temperature > 60) return "#ff9900";
         if (d.temperature < 55) return "#3399ff";
         return "#66cc66";
       });
 
-    // Add tooltip
     const tooltip = d3.select("body")
       .append("div")
       .attr("class", "tooltip")
@@ -171,7 +148,6 @@ const WeatherVisualization = () => {
       .style("padding", "10px")
       .style("pointer-events", "none");
 
-    // Add hover effects and tooltip
     dots
       .on("mouseover", (event, d) => {
         tooltip.transition()
@@ -201,7 +177,6 @@ const WeatherVisualization = () => {
           .attr("stroke", "none");
       });
     
-    // Add data labels
     svg.selectAll(".text-label")
       .data(weatherData)
       .enter()
@@ -218,7 +193,6 @@ const WeatherVisualization = () => {
       .duration(500)
       .style("opacity", 1);
     
-    // Weather icons based on condition
     const weatherIcons = {
       "Sunny": "☀️",
       "Partly Cloudy": "⛅",
@@ -238,19 +212,15 @@ const WeatherVisualization = () => {
       .text(d => weatherIcons[d.condition] || "")
       .style("font-size", "16px");
 
-    // Clean up tooltip when component unmounts
     return () => {
       d3.select("body").selectAll(".tooltip").remove();
     };
   }, [weatherData]);
 
-  // Effect to handle window resize
   useEffect(() => {
     const handleResize = () => {
-      // Redraw the chart when window is resized
       if (weatherData.length) {
         d3.select(svgRef.current).selectAll("*").remove();
-        // The chart will be redrawn by the other useEffect
       }
     };
 
@@ -267,14 +237,12 @@ const WeatherVisualization = () => {
         <p className="mb-4">Interactive visualization of weekly temperature trends with D3.js and React</p>
       </div>
       
-      {/* Chart container */}
       <div 
         ref={svgRef} 
         className="chart-container border border-gray-300 rounded-lg p-2 mb-4"
         style={{ width: '100%', height: '400px' }}
       ></div>
       
-      {/* Form to add new data */}
       <div className="form-container border border-gray-300 rounded-lg p-4 mb-4">
         <h2 className="text-xl font-bold mb-2">Add New Weather Data</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -328,7 +296,6 @@ const WeatherVisualization = () => {
         </button>
       </div>
       
-      {/* Data table */}
       <div className="table-container border border-gray-300 rounded-lg p-4">
         <h2 className="text-xl font-bold mb-2">Weather Data Table</h2>
         <div className="overflow-x-auto">
